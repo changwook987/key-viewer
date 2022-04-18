@@ -15,6 +15,7 @@ dependencies {
     testImplementation(kotlin("test"))
     // https://mvnrepository.com/artifact/com.1stleg/jnativehook
     implementation("com.1stleg:jnativehook:2.1.0")
+    implementation("org.json:json:20220320")
 }
 
 tasks {

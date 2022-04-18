@@ -3,67 +3,61 @@ package io.github.changwook987.keyViewer
 import org.jnativehook.GlobalScreen
 import org.jnativehook.keyboard.NativeKeyEvent
 import org.jnativehook.keyboard.NativeKeyListener
+import org.json.JSONObject
 import java.awt.Color
-import java.io.File
 import java.io.FileInputStream
-import java.io.FileNotFoundException
 import java.io.PrintStream
-import java.util.*
 import kotlin.system.exitProcess
 
 class Main(
-    private val keys: List<String>,
+    keymap: List<List<String>>,
     private val bg: Color,
     private val fg: Color
 ) : NativeKeyListener {
 
-    private val frame = Frame(keys, bg, fg)
+    private val frame = Frame(keymap, bg, fg)
+    private val keys = keymap.reduce { acc, strings -> acc + strings }
 
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            val properties = Properties()
+            val json = try {
+                JSONObject(
+                    FileInputStream("./config.json").bufferedReader().use {
+                        it.readLines().joinToString("").trim()
+                    }
+                )
+            } catch (e: Exception) {
+                JSONObject().apply {
+                    put("keys", listOf(listOf("A", "B", "C"), listOf("D", "E", "F")))
+                    put("foreground", "#FF0000")
+                    put("background", "#FFFFFF")
 
-            val configStream = try {
-                FileInputStream("config.properties")
-            } catch (e: FileNotFoundException) {
-                PrintStream(File("config.properties")).use {
-                    properties.setProperty("key", "A B C")
-
-                    properties.setProperty("bg", Color.WHITE.rgb.toString())
-                    properties.setProperty("fg", Color.RED.rgb.toString())
-
-                    properties.store(it, "ConfigFile")
+                    PrintStream("config.json").bufferedWriter().use {
+                        write(it)
+                    }
                 }
-
-                FileInputStream("config.properties")
             }
 
-            properties.load(configStream)
-            configStream.close()
+            val keySet = ArrayList<List<String>>()
 
-            val keySet = ArrayList<String>()
-
-            properties.getProperty("key", "")
-                .split(" ").map { it.toKeyString() }.forEach {
-                    if (it !in keySet) keySet += it
+            json.getJSONArray("keys").let { arr ->
+                for (i in 0 until arr.length()) {
+                    keySet += arr.getJSONArray(i).map { it.toString().toKeyString() }
                 }
-
-            println(properties)
+            }
 
             if (keySet.isEmpty()) {
                 println("config is empty")
                 exitProcess(0)
             }
 
-            println(keySet.joinToString(" "))
-
             GlobalScreen.registerNativeHook()
             GlobalScreen.addNativeKeyListener(
                 Main(
                     keySet,
-                    Color(properties.getProperty("bg").substringAfter("#").toInt(16)),
-                    Color(properties.getProperty("fg").substringAfter("#").toInt(16))
+                    Color.decode(json.getString("background")),
+                    Color.decode(json.getString("foreground"))
                 )
             )
         }
@@ -71,11 +65,11 @@ class Main(
 
     override fun nativeKeyTyped(event: NativeKeyEvent) {}
 
-    private fun changeKey(keyCode: Int, onoff: Boolean) {
+    private fun changeKey(keyCode: Int, `on-off`: Boolean) {
         val keyText = NativeKeyEvent.getKeyText(keyCode).toKeyString()
 
         if (keyText in keys) {
-            frame.keyMap[keyText]?.foreground = if (onoff) fg else bg
+            frame.keyMap[keyText]?.foreground = if (`on-off`) fg else bg
         }
     }
 

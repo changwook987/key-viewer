@@ -10,13 +10,22 @@ import javax.swing.JLabel
 import javax.swing.SwingConstants
 import kotlin.system.exitProcess
 
-class Frame(keys: List<String>, bg: Color, fg: Color) : JFrame() {
+class Frame(keys: List<List<String>>, bg: Color, fg: Color) : JFrame() {
     val keyMap = HashMap<String, JLabel>()
 
     var posX = 0
     var posY = 0
 
     init {
+        setSize(keys.maxOf {
+            it.map {
+                it.length * 20
+            }.reduce { acc, i ->
+                acc + i + 1
+            }
+        }, keys.size * 31 - 1)
+        layout = null
+
         val fontStream = Frame::class.java.classLoader.getResourceAsStream("Hack-Regular.ttf")
             ?: kotlin.run {
                 println("font not found!")
@@ -29,26 +38,33 @@ class Frame(keys: List<String>, bg: Color, fg: Color) : JFrame() {
 
         val border = BorderFactory.createLineBorder(fg)
 
-        var x = 0
+        var y = 0
 
-        for (key in keys) {
-            keyMap += key to JLabel(key, SwingConstants.CENTER).apply {
-                val len = key.length * 20
-                setBounds(x, 0, len, 30)
-                x += len
-                foreground = bg
+        for (line in keys) {
 
-                this.border = border
-                this.font = font
+            var x = 0
+
+            for (key in line) {
+                keyMap += key to JLabel(key, SwingConstants.CENTER).apply {
+                    val len = key.length * 20
+
+                    setBounds(x, y, len, 30)
+
+                    x += len + 1
+
+                    foreground = bg
+
+                    this.border = border
+                    this.font = font
+                }
             }
+            y += 31
         }
 
-        setSize(keys.sumOf { it.length * 20 }, 30)
-        layout = null
 
-        for (key in keyMap) {
-            println(key.value)
-            add(key.value)
+
+        for ((_, key) in keyMap) {
+            add(key)
         }
 
         //drag
@@ -70,8 +86,6 @@ class Frame(keys: List<String>, bg: Color, fg: Color) : JFrame() {
         isUndecorated = true
 
         contentPane.background = bg
-
-
 
         isVisible = true
         isResizable = false

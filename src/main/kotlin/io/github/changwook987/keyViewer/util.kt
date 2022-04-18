@@ -28,6 +28,7 @@ fun String.toKeyString(): String {
             "Down" -> "⬇"
             "Slash" -> "/"
             "BackSlash" -> "\\"
+            "Enter" -> "↩"
             else -> it
         }
     }
