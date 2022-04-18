@@ -2,3 +2,4 @@ KeyViewer.jar
 config.*
 .gradle
 /[Bb]uild/
+*.ttf

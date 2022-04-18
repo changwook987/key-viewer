@@ -21,7 +21,8 @@ fun String.toKeyString(): String {
             "Escape" -> "ESC"
             "Quote" -> "'"
             "BackQuote" -> "`"
-            "UnknownKeyCode:0xe36" -> "Shift"
+            "Shift", "ShiftL" -> "ShL"
+            "UnknownKeyCode:0xe36", "ShiftR" -> "ShR"
             "Left" -> "⬅"
             "Right" -> "➡"
             "Up" -> "⬆"
@@ -29,6 +30,14 @@ fun String.toKeyString(): String {
             "Slash" -> "/"
             "BackSlash" -> "\\"
             "Enter" -> "↩"
+            "Space" -> "␣"
+            "Delete" -> "Del"
+            "Insert" -> "Ins"
+            "PageUp" -> "PgUp"
+            "PageDown" -> "PgDn"
+            "Control" -> "Ctrl"
+            "CapsLock" -> "CLk"
+            "Backspace" -> "BS"
             else -> it
         }
     }

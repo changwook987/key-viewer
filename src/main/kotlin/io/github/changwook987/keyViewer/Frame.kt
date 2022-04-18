@@ -4,6 +4,8 @@ import java.awt.Color
 import java.awt.Font
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import java.io.FileInputStream
+import java.io.FileNotFoundException
 import javax.swing.BorderFactory
 import javax.swing.JFrame
 import javax.swing.JLabel
@@ -17,20 +19,33 @@ class Frame(keys: List<List<String>>, bg: Color, fg: Color) : JFrame() {
     var posY = 0
 
     init {
-        setSize(keys.maxOf {
-            it.map {
-                it.length * 20
-            }.reduce { acc, i ->
-                acc + i + 1
-            }
-        }, keys.size * 31 - 1)
+        //configs
+        title = "KeyViewer"
+        isUndecorated = true
+
+        contentPane.background = bg
+
+        isResizable = false
+        defaultCloseOperation = EXIT_ON_CLOSE
+        isAlwaysOnTop = true
         layout = null
 
-        val fontStream = Frame::class.java.classLoader.getResourceAsStream("Hack-Regular.ttf")
-            ?: kotlin.run {
-                println("font not found!")
-                exitProcess(-1)
-            }
+        setSize(
+            keys.maxOf {
+                it.sumOf { s ->
+                    s.length * 20
+                }
+            },
+            keys.size * 30
+        )
+
+
+        val fontStream = try {
+            FileInputStream("font.ttf")
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
+            exitProcess(-1)
+        }
 
         val font = Font.createFont(Font.TRUETYPE_FONT, fontStream).run {
             deriveFont(30f)
@@ -50,15 +65,16 @@ class Frame(keys: List<List<String>>, bg: Color, fg: Color) : JFrame() {
 
                     setBounds(x, y, len, 30)
 
-                    x += len + 1
+                    x += len
 
                     foreground = bg
+                    background = bg
 
                     this.border = border
                     this.font = font
                 }
             }
-            y += 31
+            y += 30
         }
 
 
@@ -81,15 +97,7 @@ class Frame(keys: List<List<String>>, bg: Color, fg: Color) : JFrame() {
             }
         })
 
-        //configs
-        title = "KeyViewer"
-        isUndecorated = true
-
-        contentPane.background = bg
-
         isVisible = true
-        isResizable = false
-        defaultCloseOperation = EXIT_ON_CLOSE
-        isAlwaysOnTop = true
+
     }
 }
